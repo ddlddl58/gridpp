@@ -74,7 +74,7 @@ float gridpp::relative_humidity(float temperature, float dewpoint) {
       return gridpp::MV;
 }
 float gridpp::wetbulb(float temperature, float pressure, float relative_humidity) {
-   flodt temperatureC = temperature - 273.15;
+   float temperatureC = temperature - 273.15;
    if(temperatureC <= -243.04 || relative_humidity <= 0)
       return gridpp::MV;
    if(gridpp::util::is_valid(temperatureC) && gridpp::util::is_valid(pressure) && gridpp::util::is_valid(relative_humidity)) {

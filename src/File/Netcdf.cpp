@@ -10,10 +10,16 @@ FileNetcdf::FileNetcdf(std::string iFilename, const Options& iOptions, bool iRea
 {
    int status = nc_open(getFilename().c_str(), iReadOnly ? NC_NOWRITE: NC_WRITE, &mFile);
    if(status != NC_NOERR) {
-      if(iReadOnly)
-         Util::error("Could not open NetCDF file in read-only mode" + getFilename());
-      else
-         Util::error("Could not open NetCDF file in write mode" + getFilename());
+      if(iReadOnly) {
+         std::stringstream ss;
+         ss << "Could not open NetCDF file '" << getFilename() << "' in read-only mode. Netcdf error code " << status << ".";
+         Util::error(ss.str());
+      }
+      else {
+         std::stringstream ss;
+         ss << "Could not open NetCDF file '" << getFilename() << "' in write mode. Netcdf error code " << status << ".";
+         Util::error(ss.str());
+      }
    }
    // Get defaults
    std::string latVar, lonVar, timeVar, ensDim, yDim, xDim, timeDim;
@@ -160,7 +166,10 @@ FileNetcdf::FileNetcdf(std::string iFilename, const Options& iOptions, bool iRea
 
    if(Util::isValid(mTimeVar)) {
       int size = getDimSize(mTimeDim);
-      if(Util::isValid(size)) {
+      if(size == 0) {
+
+      }
+      else if(Util::isValid(size)) {
          double* times = new double[size];
          int status = nc_get_var_double(mFile, mTimeVar, times);
          handleNetcdfError(status, "could not get times");
@@ -175,7 +184,7 @@ FileNetcdf::FileNetcdf(std::string iFilename, const Options& iOptions, bool iRea
          std::vector<double> times(1, time);
          setTimes(times);
       }
-      if(!Util::isValid(getReferenceTime())) {
+      if(size > 0 && !Util::isValid(getReferenceTime())) {
          std::stringstream ss;
          ss << "File does not contain reference time, using the first timestep as the reference time";
          Util::warning(ss.str());
